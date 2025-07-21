@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backtest Setup - {{ strategy_name }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Backtest Setup: {{ strategy_name }}</h1>
+        <form id="backtest-form" class="mt-4">
+            <div class="form-group">
+                <label for="start_date">Start Date</label>
+                <input type="date" id="start_date" name="start_date" class="form-control" value="{{ min_date }}">
+            </div>
+            <div class="form-group">
+                <label for="end_date">End Date</label>
+                <input type="date" id="end_date" name="end_date" class="form-control" value="{{ max_date }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Run Backtest</button>
+        </form>
+
+        <h2 class="mt-5">Logs</h2>
+        <pre id="logs" style="background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; min-height: 200px;"></pre>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        $(document).ready(function() {
+            var socket = io();
+
+            socket.on('connect', function() {
+                console.log('Connected to server');
+            });
+
+            socket.on('log', function(msg) {
+                $('#logs').append(msg.data + '\n');
+            });
+
+            $('#backtest-form').submit(function(event) {
+                event.preventDefault();
+                $('#logs').empty();
+                socket.emit('run_backtest', {
+                    strategy_name: '{{ strategy_name }}',
+                    start_date: $('#start_date').val(),
+                    end_date: $('#end_date').val()
+                });
+            });
+        });
+    </script>
+</body>
+</html>

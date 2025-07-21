@@ -4,17 +4,179 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ index_name }} Constituents</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .header-actions {
+            margin-bottom: 20px;
+        }
+        .filter-form {
+            margin-bottom: 20px;
+        }
+        .table-container {
+            margin-top: 20px;
+        }
+        th a {
+            color: #343a40;
+            text-decoration: none;
+        }
+        th a:hover {
+            color: #0056b3;
+        }
+        .sort-icon {
+            margin-left: 5px;
+        }
+        .market-data-cell {
+            font-style: italic;
+            color: #888;
+        }
+    </style>
 </head>
 <body>
-    <h1>{{ index_name }} Constituents as of {{ date }}</h1>
-    <ul>
-        {% for ticker in constituents %}
-            <li><a href="/data/{{ ticker }}">{{ ticker }}</a></li>
-        {% endfor %}
-    </ul>
+    <h1>{{ index_name }} Constituents <small class="text-muted">as of {{ date.strftime('%Y-%m-%d') }}</small></h1>
+
+    <div class="header-actions">
+        <form method="get" action="{{ url_for('view_index_constituents', index_name=index_name) }}" class="form-inline" id="date-form">
+            <div class="form-group">
+                <label for="datepicker" class="mr-2">Go to date:</label>
+                <input type="text" id="datepicker" name="date_str" class="form-control mr-2" placeholder="YYYYMMDD" value="{{ date_str }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Go</button>
+        </form>
+        <a href="{{ url_for('view_corporate_actions', index_name=index_name, date_str=date_str) }}" class="btn btn-info mt-2">View Corporate Actions for this date</a>
+    </div>
+
+    <form class="filter-form" method="get">
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="industry_group">Industry Group</label>
+                <select id="industry_group" name="industry_group" class="form-control">
+                    <option value="">All</option>
+                    {% for group in filter_options.industry_groups %}
+                        <option value="{{ group }}" {% if group == current_filters.industry_group %}selected{% endif %}>{{ group }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="industry_sector">Industry Sector</label>
+                <select id="industry_sector" name="industry_sector" class="form-control">
+                    <option value="">All</option>
+                    {% for sector in filter_options.industry_sectors %}
+                        <option value="{{ sector }}" {% if sector == current_filters.industry_sector %}selected{% endif %}>{{ sector }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label for="industry_subgroup">Industry Subgroup</label>
+                <select id="industry_subgroup" name="industry_subgroup" class="form-control">
+                    <option value="">All</option>
+                    {% for subgroup in filter_options.industry_subgroups %}
+                        <option value="{{ subgroup }}" {% if subgroup == current_filters.industry_subgroup %}selected{% endif %}>{{ subgroup }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="{{ url_for('view_index_constituents', index_name=index_name, date_str=date_str) }}" class="btn btn-secondary">Clear Filters</a>
+    </form>
+    
+    <div class="table-container">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    {% for header in headers %}
+                        <th>
+                            <a href="{{ url_for('view_index_constituents', index_name=index_name, date_str=date_str, sort_by=header, sort_order='asc' if sort_by != header or sort_order == 'desc' else 'desc', **current_filters) }}">
+                                {{ header }}
+                                {% if sort_by == header %}
+                                    <span class="sort-icon">
+                                        {% if sort_order == 'asc' %}▲{% else %}▼{% endif %}
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </th>
+                    {% endfor %}
+                    <th>Open</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Close</th>
+                    <th>Volume</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in constituents %}
+                    <tr data-ticker="{{ row.TICKER }}">
+                        {% for header in headers %}
+                            <td>{{ row[header] }}</td>
+                        {% endfor %}
+                        <td class="market-data-cell open">Loading...</td>
+                        <td class="market-data-cell high">Loading...</td>
+                        <td class="market-data-cell low">Loading...</td>
+                        <td class="market-data-cell close">Loading...</td>
+                        <td class="market-data-cell volume">Loading...</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
     <br>
-    <a href="/indices">Back to Indices</a>
+    <a href="/indecies">Back to Indecies</a>
     <br>
     <a href="/">Back to Dashboard</a>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            var availableDates = {{ available_dates|tojson }};
+            $('#datepicker').datepicker({
+                format: 'yyyymmdd',
+                beforeShowDay: function(date){
+                    var d = date;
+                    var year = d.getFullYear();
+                    var month = ('0' + (d.getMonth() + 1)).slice(-2);
+                    var day = ('0' + d.getDate()).slice(-2);
+                    var formattedDate = year + '-' + month + '-' + day;
+                    if (availableDates.indexOf(formattedDate) != -1) {
+                        return { enabled: true };
+                    } else {
+                        return { enabled: false };
+                    }
+                }
+            }).on('changeDate', function(e) {
+                // Automatically submit the form when a date is selected
+                var date = e.format('yyyymmdd');
+                var form = $('#date-form');
+                form.find('input[name="date_str"]').val(date);
+                form.submit();
+            });
+
+            // Asynchronously load market data
+            $('tr[data-ticker]').each(function() {
+                var ticker = $(this).data('ticker');
+                var dateStr = "{{ date_str }}";
+                var row = $(this);
+                $.ajax({
+                    url: '/api/market_data/' + ticker + '/' + dateStr,
+                    success: function(data) {
+                        row.find('.open').text(data.open).removeClass('market-data-cell');
+                        row.find('.high').text(data.high).removeClass('market-data-cell');
+                        row.find('.low').text(data.low).removeClass('market-data-cell');
+                        row.find('.close').text(data.close).removeClass('market-data-cell');
+                        row.find('.volume').text(data.volume).removeClass('market-data-cell');
+                    },
+                    error: function() {
+                        row.find('.market-data-cell').text('Error').removeClass('market-data-cell');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

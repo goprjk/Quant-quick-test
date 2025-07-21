@@ -1,2 +1,5 @@
 pandas
 flask
+statsmodels
+flask-socketio
+gevent-websocket

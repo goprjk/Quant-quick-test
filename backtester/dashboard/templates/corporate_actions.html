@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporate Actions - {{ index_name }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Corporate Actions for {{ index_name }} <small class="text-muted">on {{ date }}</small></h1>
+
+    {% if corporate_actions %}
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>Ticker</th>
+                    <th>Dividend Amount</th>
+                    <th>Dividend Type</th>
+                    <th>Payable Date</th>
+                    <th>Record Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for action in corporate_actions %}
+                    <tr>
+                        <td>{{ action.TICKER }}</td>
+                        <td>{{ action['Dividend Amount'] }}</td>
+                        <td>{{ action['Dividend Type'] }}</td>
+                        <td>{{ action['Payable Date'] }}</td>
+                        <td>{{ action['Record Date'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="mt-4">No corporate actions found for this date.</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('view_index_constituents', index_name=index_name, date_str=date.strftime('%Y%m%d')) }}">Back to Index Constituents</a>
+    <br>
+    <a href="/">Back to Dashboard</a>
+</body>
+</html>

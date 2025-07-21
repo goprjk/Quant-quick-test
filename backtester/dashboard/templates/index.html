@@ -36,22 +36,29 @@
     <div class="container">
         <div class="panel" id="strategies-panel">
             <h2>Backtesting Strategies</h2>
-            <form action="/backtest/run" method="post">
+            <form id="backtest-setup-form" action="/backtest/setup/{{ strategies[0] if strategies else '' }}" method="get">
                 <label for="strategy">Select a Strategy:</label>
-                <select name="strategy" id="strategy" style="width: 100%; margin-bottom: 10px;">
+                <select id="strategy" style="width: 100%; margin-bottom: 10px;">
                     {% for strategy in strategies %}
                         <option value="{{ strategy }}">{{ strategy }}</option>
                     {% endfor %}
                 </select>
                 <br>
-                <input type="submit" value="Run Backtest">
+                <input type="submit" value="Setup Backtest">
             </form>
+    </div>
+    <script>
+        document.getElementById('strategy').addEventListener('change', function() {
+            var form = document.getElementById('backtest-setup-form');
+            form.action = '/backtest/setup/' + this.value;
+        });
+    </script>
         </div>
         <div class="panel" id="indices-panel">
             <h2>Available Indices</h2>
             <ul>
                 {% for index in indices %}
-                    <li><a href="/indices/{{ index }}">{{ index }}</a></li>
+                    <li><a href="/indecies/{{ index }}">{{ index }}</a></li>
                 {% endfor %}
             </ul>
         </div>
