@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Indices</title>
+</head>
+<body>
+    <h1>Available Indices</h1>
+    <ul>
+        {% for index in indices %}
+            <li><a href="/indices/{{ index }}">{{ index }}</a></li>
+        {% endfor %}
+    </ul>
+    <br>
+    <a href="/">Back to Dashboard</a>
+</body>
+</html>

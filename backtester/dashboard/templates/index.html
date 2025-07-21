@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backtester Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+        }
+        .panel {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid #ccc;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        h1 {
+            text-align: center;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Backtester Dashboard</h1>
+    <div class="container">
+        <div class="panel" id="strategies-panel">
+            <h2>Backtesting Strategies</h2>
+            <form action="/backtest/run" method="post">
+                <label for="strategy">Select a Strategy:</label>
+                <select name="strategy" id="strategy" style="width: 100%; margin-bottom: 10px;">
+                    {% for strategy in strategies %}
+                        <option value="{{ strategy }}">{{ strategy }}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <input type="submit" value="Run Backtest">
+            </form>
+        </div>
+        <div class="panel" id="indices-panel">
+            <h2>Available Indices</h2>
+            <ul>
+                {% for index in indices %}
+                    <li><a href="/indices/{{ index }}">{{ index }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

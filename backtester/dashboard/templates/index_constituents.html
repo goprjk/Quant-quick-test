@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ index_name }} Constituents</title>
+</head>
+<body>
+    <h1>{{ index_name }} Constituents as of {{ date }}</h1>
+    <ul>
+        {% for ticker in constituents %}
+            <li><a href="/data/{{ ticker }}">{{ ticker }}</a></li>
+        {% endfor %}
+    </ul>
+    <br>
+    <a href="/indices">Back to Indices</a>
+    <br>
+    <a href="/">Back to Dashboard</a>
+</body>
+</html>
